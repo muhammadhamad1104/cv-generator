@@ -195,6 +195,13 @@ async def main():
     await mcp_server.start()
 
 
+# Create server instance for FastMCP cloud (module-level)
+_server_instance = CVGeneratorMCPServer()
+server = _server_instance.server  # FastMCP looks for this
+mcp = _server_instance.server     # Alternative name
+app = _server_instance.server     # Another alternative
+
+
 if __name__ == "__main__":
     try:
         asyncio.run(main())
