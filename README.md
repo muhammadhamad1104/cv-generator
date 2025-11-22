@@ -260,7 +260,7 @@ Set in FastMCP dashboard:
 
 3. **Entry Point:**
 The server uses stdio transport - FastMCP will handle this automatically
-- Main file: `server.py`
+- **Entry Point**: `server.py`
 - Command: `python server.py`
 
 4. **PDF Download Location:**

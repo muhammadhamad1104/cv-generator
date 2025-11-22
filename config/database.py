@@ -24,9 +24,17 @@ async def connect_db():
     try:
         mongo_uri = os.getenv('MONGO_URI')
         if not mongo_uri:
-            raise ValueError("MONGO_URI not found in environment variables")
+            logger.error("MONGO_URI not found in environment variables")
+            logger.error("Available env vars: " + ", ".join(os.environ.keys()))
+            raise ValueError("MONGO_URI environment variable is required")
         
-        db_client = AsyncIOMotorClient(mongo_uri)
+        logger.info(f"Connecting to MongoDB (URI length: {len(mongo_uri)})")
+        
+        db_client = AsyncIOMotorClient(
+            mongo_uri,
+            serverSelectionTimeoutMS=5000,
+            connectTimeoutMS=5000
+        )
         
         # Get database name from URI or use default
         database = db_client.get_default_database()
@@ -34,10 +42,11 @@ async def connect_db():
         # Test connection
         await db_client.admin.command('ping')
         
-        logger.info(f"Connected to MongoDB database: {database.name}")
+        logger.info(f"✅ Connected to MongoDB database: {database.name}")
         
     except Exception as error:
-        logger.error(f"Database connection error: {str(error)}")
+        logger.error(f"❌ Database connection error: {str(error)}")
+        logger.error(f"Error type: {type(error).__name__}")
         raise
 
 

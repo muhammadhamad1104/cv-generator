@@ -1,6 +1,9 @@
 """
 CV Generator MCP Server (Python Implementation)
 This is a Python version of the Node.js MCP server for CV generation
+
+Environment Variables Required:
+- MONGO_URI: MongoDB connection string (required)
 """
 
 import asyncio
@@ -8,10 +11,15 @@ import json
 import logging
 import sys
 import os
-from typing import Any, Dict, Optional
 
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Load environment variables FIRST
+from dotenv import load_dotenv
+load_dotenv()
+
+from typing import Any, Dict, Optional
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
@@ -125,14 +133,34 @@ class CVGeneratorMCPServer:
     async def start(self):
         """Start the MCP server"""
         try:
+            logger.info("=" * 50)
+            logger.info("CV Generator MCP Server Starting...")
+            logger.info("=" * 50)
+            
+            # Check environment
+            import os
+            from dotenv import load_dotenv
+            load_dotenv()
+            
+            mongo_uri = os.getenv('MONGO_URI')
+            if mongo_uri:
+                logger.info(f"✅ MONGO_URI found (length: {len(mongo_uri)})")
+            else:
+                logger.error("❌ MONGO_URI not found in environment")
+                raise ValueError("MONGO_URI environment variable is required")
+            
             # Connect to database
+            logger.info("Connecting to MongoDB...")
             await connect_db()
-            logger.info("MCP Server: Database connected")
+            logger.info("✅ Database connected successfully")
             
             # Start MCP server with stdio transport
+            logger.info("Starting MCP server with stdio transport...")
             async with stdio_server() as (read_stream, write_stream):
-                logger.info("CV Generator MCP Server running on stdio")
-                logger.info(f"Available tools: {', '.join(t.name for t in self.tools)}")
+                logger.info("=" * 50)
+                logger.info("🚀 CV Generator MCP Server is running!")
+                logger.info(f"📦 Available tools: {', '.join(t.name for t in self.tools)}")
+                logger.info("=" * 50)
                 
                 await self.server.run(
                     read_stream,
@@ -140,12 +168,29 @@ class CVGeneratorMCPServer:
                     self.server.create_initialization_options()
                 )
         except Exception as error:
-            logger.error(f"MCP Server: Failed to start - {str(error)}")
+            logger.error("=" * 50)
+            logger.error(f"❌ MCP Server failed to start: {str(error)}")
+            logger.error(f"Error type: {type(error).__name__}")
+            logger.error("=" * 50)
+            import traceback
+            logger.error(traceback.format_exc())
             sys.exit(1)
 
 
 async def main():
     """Main entry point"""
+    # Verify environment variables before starting
+    mongo_uri = os.getenv('MONGO_URI')
+    if not mongo_uri:
+        logger.error("=" * 60)
+        logger.error("❌ FATAL: MONGO_URI environment variable not set!")
+        logger.error("=" * 60)
+        logger.error("Please set MONGO_URI in your environment variables:")
+        logger.error("  - For FastMCP: Add MONGO_URI in Environment Variables section")
+        logger.error("  - For local: Add MONGO_URI to .env file")
+        logger.error("=" * 60)
+        sys.exit(1)
+    
     mcp_server = CVGeneratorMCPServer()
     await mcp_server.start()
 
