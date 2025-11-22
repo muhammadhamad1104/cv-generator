@@ -4,11 +4,11 @@
 
 ## ✨ Features
 
-- **Standalone PDF Generation**: Uses WeasyPrint - no backend required
+- **Cloud-Compatible PDF Generation**: Uses ReportLab - pure Python, no system dependencies
 - **Complete Profile CRUD**: Create, read, update, delete profiles
 - **Three Professional Templates**: Classic, Modern, Europass
 - **MongoDB Integration**: Async database operations with Motor
-- **FastMCP Cloud Ready**: Deploy directly to FastMCP cloud
+- **FastMCP Cloud Ready**: Deploy directly to FastMCP cloud with zero configuration
 
 ## 📂 Structure
 
@@ -26,16 +26,8 @@ cv-generator/
 │   ├── cv.py              # CV schema
 │   └── user.py            # User schema
 ├── services/
-│   ├── cv_service.py      # Standalone PDF generation
+│   ├── cv_service.py      # PDF generation with ReportLab
 │   └── storage_service.py # Local file storage
-├── templates/
-│   └── cv/
-│       ├── classic.hbs    # Classic template + CSS
-│       ├── classic.css
-│       ├── modern.hbs     # Modern template + CSS
-│       ├── modern.css
-│       ├── europass.hbs   # Europass template + CSS
-│       └── europass.css
 ├── tools/
 │   ├── generate_cv.py     # CV generation tool
 │   └── profile_tools.py   # Profile CRUD tools
@@ -67,7 +59,7 @@ python verify.py
 
 This checks:
 - ✅ All files present
-- ✅ Python packages installed (WeasyPrint, Pybars3, Motor)
+- ✅ Python packages installed (ReportLab, Motor, Pillow)
 - ✅ Environment configured
 - ✅ Tools loaded correctly
 
@@ -218,10 +210,10 @@ Delete a user profile completely.
    - `update_profile`: Updates existing profile
    - `delete_profile`: Deletes profile from MongoDB
 3. **Services** handle business logic:
-   - `cv_service`: Validates data, generates PDF using WeasyPrint (standalone)
+   - `cv_service`: Validates data, generates PDF using ReportLab (pure Python)
    - `storage_service`: Saves generated files to `uploads/cv/`
 4. **Database** (MongoDB): Stores profiles, CV metadata
-5. **PDF Generation**: WeasyPrint renders Handlebars templates to PDF (no external dependencies)
+5. **PDF Generation**: ReportLab programmatically creates PDFs (cloud-compatible, no system dependencies)
 
 ## 📦 Deployment
 
@@ -269,10 +261,10 @@ The server uses stdio transport - FastMCP will handle this automatically
 - Files named as: `cv_<cvId>_<timestamp>.pdf`
 
 5. **Important Notes:**
-- Completely standalone - no backend required
+- Cloud-compatible - pure Python, no system dependencies
 - MongoDB Atlas recommended for cloud deployment
-- Templates are embedded in `templates/cv/` directory
-- PDFs generated using WeasyPrint (native Python)
+- Templates are programmatically generated via ReportLab
+- PDFs generated using ReportLab (works on any platform including serverless)
 
 ### Claude Desktop Configuration
 
@@ -328,13 +320,11 @@ The Python MCP server includes three professional CV templates (same as Node.js 
 - Skills with visual proficiency bars
 - Perfect for: EU job applications, international positions
 
-**Template Files:**
-```
-templates/cv/
-├── classic.hbs & classic.css
-├── modern.hbs & modern.css
-└── europass.hbs & europass.css
-```
+**Template Implementation:**
+Templates are programmatically generated using ReportLab's layout engine. Each template style is implemented as a method in `cv_service.py`:
+- `_build_modern_template()` - Modern layout with blue accents
+- `_build_classic_template()` - Traditional professional layout
+- `_build_europass_template()` - EU-standard format
 
 **Usage:**
 ```python

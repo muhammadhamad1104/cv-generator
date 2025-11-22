@@ -9,9 +9,8 @@ pymongo>=4.6.0
 # Environment variables
 python-dotenv>=1.0.0
 
-# PDF Generation (standalone - no backend needed)
-weasyprint>=60.0
-pybars3>=0.9.7
+# PDF Generation (cloud-compatible, pure Python)
+reportlab>=4.0.0
 
 # Image processing for profile photos
 Pillow>=10.0.0

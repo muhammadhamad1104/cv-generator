@@ -23,9 +23,6 @@ def check_file_structure():
         "services/storage_service.py",
         "tools/generate_cv.py",
         "tools/profile_tools.py",
-        "templates/cv/classic.hbs",
-        "templates/cv/modern.hbs",
-        "templates/cv/europass.hbs",
     ]
     
     all_exist = True
@@ -47,8 +44,7 @@ def check_imports():
         'motor': 'motor',
         'pymongo': 'pymongo',
         'dotenv': 'python-dotenv',
-        'weasyprint': 'weasyprint',
-        'pybars': 'pybars3',
+        'reportlab': 'reportlab',
         'PIL': 'Pillow',
     }
     
