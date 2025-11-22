@@ -1,0 +1,28 @@
+/* Europass CV Style - Additional CSS for PDF generation */
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .cv-container {
+    page-break-after: avoid;
+  }
+  
+  .section {
+    page-break-inside: avoid;
+  }
+}
+
+/* Print-specific adjustments */
+.timeline-item,
+.project-item,
+.reference-item {
+  page-break-inside: avoid;
+}

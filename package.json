@@ -1,0 +1,12 @@
+{
+  "name": "cv-generator-mcp-python",
+  "version": "1.0.0",
+  "description": "Python MCP server for CV Generator",
+  "scripts": {
+    "start": "python server.py",
+    "test": "python client.py",
+    "install": "pip install -r requirements.txt"
+  },
+  "author": "",
+  "license": "ISC"
+}

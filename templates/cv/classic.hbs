@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10pt;
+      color: #000;
+      line-height: 1.3;
+      background: white;
+    }
+
+    /* ===== PAGE CONTAINER (A4) ===== */
+    .cv-container {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: white;
+      padding: 20px 25px;
+    }
+
+    .cv-layout {
+      display: grid;
+      grid-template-columns: 32% 68%;
+      gap: 18px;
+      width: 100%;
+      min-height: 100%;
+    }
+
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+    }
+
+    /* ===== SIDEBAR ===== */
+    .sidebar {
+      background: #f3f6fb;
+      border-radius: 4px;
+      padding: 16px 14px 20px;
+      display: flex;
+      flex-direction: column;
+      row-gap: 16px;
+    }
+
+    .sidebar-section {
+      margin-top: 6px;
+    }
+
+    .sidebar-section-title {
+      font-size: 9.5pt;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #0054a6;
+      border-bottom: 1px solid #c8d3e6;
+      padding-bottom: 3px;
+      margin-bottom: 6px;
+    }
+
+    /* ===== HEADER INSIDE SIDEBAR ===== */
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #d0d7e2;
+      margin-bottom: 6px;
+    }
+
+    .profile-photo-container {
+      flex-shrink: 0;
+    }
+
+    .profile-photo {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #0054a6;
+    }
+
+    .header-info {
+      width: 100%;
+    }
+
+    .full-name {
+      font-size: 16pt;
+      font-weight: bold;
+      color: #000;
+      margin-bottom: 3px;
+      letter-spacing: 0.3px;
+    }
+
+    .contact-grid {
+      margin-top: 6px;
+      font-size: 8.5pt;
+      width: 100%;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 4px;
+    }
+
+    .contact-icon {
+      padding-right: 4px;
+      width: 16px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .contact-label {
+      font-weight: bold;
+      color: #000;
+      padding-right: 4px;
+    }
+
+    .contact-value {
+      color: #0054a6;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .contact-value a {
+      color: #0054a6;
+      text-decoration: none;
+    }
+
+    .linkedin-icon {
+      width: 14px;
+      height: 14px;
+      vertical-align: middle;
+      margin-right: 3px;
+    }
+
+    /* ===== MAIN CONTENT COLUMN ===== */
+    .main-content {
+      padding-top: 2px;
+    }
+
+    .section {
+      margin-bottom: 20px;
+      page-break-inside: avoid;
+    }
+
+    .section-title {
+      font-size: 11pt;
+      font-weight: bold;
+      color: #fff;
+      background: #0054a6;
+      padding: 5px 10px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== ABOUT ME ===== */
+    .about-content {
+      text-align: justify;
+      line-height: 1.5;
+      font-size: 10pt;
+      color: #000;
+    }
+
+    /* ===== WORK EXPERIENCE (2-COLUMN: DATES + CONTENT) ===== */
+    .experience-item {
+      display: grid;
+      grid-template-columns: 95px auto;
+      column-gap: 12px;
+      margin-bottom: 14px;
+      page-break-inside: avoid;
+    }
+
+    .experience-dates {
+      font-size: 8pt;
+      color: #555;
+      font-weight: bold;
+      text-align: right;
+      padding-top: 2px;
+      line-height: 1.3;
+    }
+
+    .experience-main {
+      font-size: 10pt;
+    }
+
+    .experience-title {
+      font-size: 11pt;
+      font-weight: bold;
+      color: #000;
+      font-style: italic;
+      margin-bottom: 3px;
+    }
+
+    .experience-meta {
+      font-size: 9pt;
+      color: #000;
+      margin-bottom: 2px;
+    }
+
+    .experience-meta-line {
+      margin-bottom: 2px;
+    }
+
+    .meta-label {
+      font-weight: bold;
+      color: #000;
+    }
+
+    .experience-links {
+      margin: 4px 0;
+      font-size: 9pt;
+    }
+
+    .experience-link {
+      display: inline-block;
+      font-size: 9pt;
+      color: #0054a6;
+      text-decoration: underline;
+      margin-right: 8px;
+      margin-top: 1px;
+    }
+
+    .experience-description {
+      font-size: 10pt;
+      line-height: 1.4;
+      color: #000;
+      text-align: justify;
+      margin-top: 2px;
+    }
+
+    .experience-description ul {
+      margin-left: 18px;
+      margin-top: 4px;
+    }
+
+    .experience-description li {
+      margin-bottom: 3px;
+    }
+
+    /* ===== EDUCATION (2-COLUMN: DATES + CONTENT) ===== */
+    .education-item {
+      display: grid;
+      grid-template-columns: 95px auto;
+      column-gap: 12px;
+      margin-bottom: 14px;
+      page-break-inside: avoid;
+    }
+
+    .education-dates {
+      font-size: 8pt;
+      color: #555;
+      font-weight: bold;
+      text-align: right;
+      padding-top: 2px;
+      line-height: 1.3;
+    }
+
+    .education-main {
+      font-size: 10pt;
+    }
+
+    .education-degree {
+      font-size: 11pt;
+      font-weight: bold;
+      color: #000;
+      margin-bottom: 3px;
+    }
+
+    .education-institution {
+      font-size: 10pt;
+      font-style: italic;
+      color: #000;
+      margin-bottom: 2px;
+    }
+
+    .education-meta {
+      font-size: 9pt;
+      color: #000;
+      margin-bottom: 2px;
+    }
+
+    .education-description {
+      font-size: 10pt;
+      line-height: 1.4;
+      color: #000;
+      margin-top: 4px;
+    }
+
+    /* ===== LANGUAGES (IN SIDEBAR) ===== */
+    .language-section {
+      font-size: 9pt;
+    }
+
+    .language-category {
+      margin-bottom: 8px;
+    }
+
+    .language-title {
+      font-size: 9.5pt;
+      font-weight: bold;
+      color: #000;
+      margin-bottom: 3px;
+    }
+
+    .language-subtitle {
+      font-size: 9.5pt;
+      font-weight: bold;
+      color: #000;
+      margin-top: 6px;
+      margin-bottom: 3px;
+    }
+
+    .language-name {
+      font-size: 9pt;
+      color: #000;
+      margin-bottom: 2px;
+    }
+
+    .language-levels {
+      font-size: 8.5pt;
+      color: #000;
+      margin-bottom: 2px;
+    }
+
+    .language-levels .level-item {
+      display: inline-block;
+      margin-right: 10px;
+    }
+
+    .language-levels .level-label {
+      font-weight: bold;
+    }
+
+    .language-note {
+      font-size: 7.5pt;
+      color: #666;
+      font-style: italic;
+      margin-top: 4px;
+    }
+
+    /* ===== SKILLS (IN SIDEBAR) ===== */
+    .skills-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 10px;
+      font-size: 9pt;
+    }
+
+    .skill-item {
+      color: #000;
+    }
+
+    .skill-separator {
+      color: #000;
+    }
+
+    /* ===== NETWORKS & MEMBERSHIPS (IN SIDEBAR) ===== */
+    .membership-item {
+      margin-bottom: 10px;
+      page-break-inside: avoid;
+      font-size: 9pt;
+    }
+
+    .membership-dates {
+      font-size: 8pt;
+      color: #555;
+      margin-bottom: 2px;
+      font-weight: bold;
+    }
+
+    .membership-title {
+      font-size: 9.5pt;
+      font-weight: bold;
+      color: #000;
+      margin-bottom: 2px;
+    }
+
+    .membership-description {
+      font-size: 9pt;
+      line-height: 1.3;
+      color: #000;
+      margin-bottom: 3px;
+    }
+
+    .membership-link {
+      font-size: 8.5pt;
+      color: #0054a6;
+      text-decoration: underline;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <div class="cv-container">
+    <div class="cv-layout">
+      <!-- ===== LEFT SIDEBAR ===== -->
+      <aside class="sidebar">
+        <!-- Header with Profile Photo + Personal Info -->
+        <div class="header">
+          {{#if settings.showPhoto}}
+          {{#if personalInfo.profilePhoto}}
+          <div class="profile-photo-container">
+            <img src="{{personalInfo.profilePhoto}}" alt="Profile Photo" class="profile-photo">
+          </div>
+          {{/if}}
+          {{/if}}
+
+          <div class="header-info">
+            <div class="full-name">{{personalInfo.firstName}} {{personalInfo.lastName}}</div>
+
+            <div class="contact-grid">
+              {{#if personalInfo.address}}
+              <div class="contact-item">
+                <div class="contact-icon">📍</div>
+                <div>
+                  <span class="contact-label">Work:</span>
+                  <span class="contact-value">{{personalInfo.address}}, {{personalInfo.city}}, {{personalInfo.country}}</span>
+                </div>
+              </div>
+              {{/if}}
+
+              {{#if personalInfo.email}}
+              <div class="contact-item">
+                <div class="contact-icon">✉</div>
+                <div>
+                  <span class="contact-label">Email:</span>
+                  <a href="mailto:{{personalInfo.email}}" class="contact-value">{{personalInfo.email}}</a>
+                </div>
+              </div>
+              {{/if}}
+
+              {{#if personalInfo.phone}}
+              <div class="contact-item">
+                <div class="contact-icon">📞</div>
+                <div>
+                  <span class="contact-label">Phone:</span>
+                  <span class="contact-value">{{personalInfo.phone}}</span>
+                </div>
+              </div>
+              {{/if}}
+
+              {{#if socialLinks.portfolio}}
+              <div class="contact-item">
+                <div class="contact-icon">🌐</div>
+                <div>
+                  <span class="contact-label">Website:</span>
+                  <a href="{{socialLinks.portfolio}}" class="contact-value">{{socialLinks.portfolio}}</a>
+                </div>
+              </div>
+              {{/if}}
+
+              {{#if socialLinks.linkedin}}
+              <div class="contact-item">
+                <div class="contact-icon">🔗</div>
+                <div>
+                  <span class="contact-label">LinkedIn:</span>
+                  <a href="{{socialLinks.linkedin}}" class="contact-value">{{socialLinks.linkedin}}</a>
+                </div>
+              </div>
+              {{/if}}
+
+              {{#if personalInfo.id}}
+              <div class="contact-item">
+                <div class="contact-icon"></div>
+                <div>
+                  <span class="contact-label">ID:</span>
+                  <span class="contact-value">{{personalInfo.id}}</span>
+                </div>
+              </div>
+              {{/if}}
+
+              {{#if personalInfo.dateOfBirth}}
+              <div class="contact-item">
+                <div class="contact-icon"></div>
+                <div>
+                  <span class="contact-label">Date of birth:</span>
+                  <span class="contact-value">{{formatDate personalInfo.dateOfBirth}}</span>
+                </div>
+              </div>
+              {{/if}}
+
+              {{#if personalInfo.placeOfBirth}}
+              <div class="contact-item">
+                <div class="contact-icon"></div>
+                <div>
+                  <span class="contact-label">Place of birth:</span>
+                  <span class="contact-value">{{personalInfo.placeOfBirth}}</span>
+                </div>
+              </div>
+              {{/if}}
+
+              {{#if personalInfo.nationality}}
+              <div class="contact-item">
+                <div class="contact-icon"></div>
+                <div>
+                  <span class="contact-label">Nationality:</span>
+                  <span class="contact-value">{{personalInfo.nationality}}</span>
+                </div>
+              </div>
+              {{/if}}
+            </div>
+          </div>
+        </div>
+
+        <!-- Languages in Sidebar -->
+        {{#if settings.sections.languages}}
+        {{#if languages}}
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Language Skills</div>
+          <div class="language-section">
+            {{#each languages}}
+            {{#if @first}}
+            <div class="language-category">
+              <div class="language-title">Mother tongue(s): {{this.language}}</div>
+            </div>
+            {{/if}}
+            {{/each}}
+
+            {{#if languages.[1]}}
+            <div class="language-category">
+              <div class="language-subtitle">Other language(s):</div>
+              {{#each languages}}
+              {{#unless @first}}
+              <div style="margin-bottom: 6px;">
+                <div class="language-name">{{this.language}}</div>
+                <div class="language-levels">
+                  <span class="level-item">
+                    <span class="level-label">LISTENING</span> {{this.proficiency}}
+                  </span>
+                  <span class="level-item">
+                    <span class="level-label">READING</span> {{this.proficiency}}
+                  </span>
+                  <span class="level-item">
+                    <span class="level-label">WRITING</span> {{this.proficiency}}
+                  </span>
+                </div>
+                <div class="language-levels">
+                  <span class="level-item">
+                    <span class="level-label">SPOKEN PRODUCTION</span> {{this.proficiency}}
+                  </span>
+                  <span class="level-item">
+                    <span class="level-label">SPOKEN INTERACTION</span> {{this.proficiency}}
+                  </span>
+                </div>
+              </div>
+              {{/unless}}
+              {{/each}}
+              <div class="language-note">
+                Levels: A1 and A2: Basic user; B1 and B2: Independent user; C1 and C2: Proficient user
+              </div>
+            </div>
+            {{/if}}
+          </div>
+        </div>
+        {{/if}}
+        {{/if}}
+
+        <!-- Skills in Sidebar -->
+        {{#if settings.sections.skills}}
+        {{#if skills}}
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Skills</div>
+          <div class="skills-container">
+            {{#each skills}}
+            <span class="skill-item">{{this.name}}</span>
+            {{#unless @last}}<span class="skill-separator">|</span>{{/unless}}
+            {{/each}}
+          </div>
+        </div>
+        {{/if}}
+        {{/if}}
+
+        <!-- Networks & Memberships in Sidebar -->
+        {{#if settings.sections.certifications}}
+        {{#if certifications}}
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Networks and Memberships</div>
+          {{#each certifications}}
+          <div class="membership-item">
+            <div class="membership-dates">
+              [ {{formatDate this.issueDate}} – Current ]
+            </div>
+            <div class="membership-title">{{this.title}}</div>
+            <div class="membership-description">
+              {{this.issuer}}
+            </div>
+            {{#if this.credentialUrl}}
+            <a href="{{this.credentialUrl}}" class="membership-link" target="_blank">{{this.credentialUrl}}</a>
+            {{/if}}
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+        {{/if}}
+      </aside>
+
+      <!-- ===== RIGHT MAIN CONTENT ===== -->
+      <main class="main-content">
+        <!-- About Me -->
+        {{#if settings.sections.summary}}
+        {{#if summary}}
+        <div class="section">
+          <div class="section-title">About Me</div>
+          <div class="about-content">{{summary}}</div>
+        </div>
+        {{/if}}
+        {{/if}}
+
+        <!-- Work Experience -->
+        {{#if settings.sections.workExperience}}
+        {{#if workExperience}}
+        <div class="section">
+          <div class="section-title">Work Experience</div>
+          {{#each workExperience}}
+          <div class="experience-item">
+            <div class="experience-dates">
+              [ {{formatDate this.startDate}} –
+              {{#if this.currentlyWorking}}{{formatDate "now"}}{{else}}{{formatDate this.endDate}}{{/if}} ]
+            </div>
+            <div class="experience-main">
+              <div class="experience-title">{{this.jobTitle}}</div>
+
+              <div class="experience-meta">
+                {{#if this.employer}}
+                <div class="experience-meta-line">
+                  <span class="meta-label">Name of unit or department:</span> {{this.employer}}
+                </div>
+                {{/if}}
+              </div>
+
+              {{#if this.description}}
+              <div class="experience-links">
+                <span class="meta-label">Links</span>
+                {{#if socialLinks.github}}
+                <a href="{{socialLinks.github}}" class="experience-link" target="_blank">{{socialLinks.github}}</a>
+                {{/if}}
+              </div>
+              {{/if}}
+
+              {{#if this.description}}
+              <div class="experience-description">
+                {{this.description}}
+              </div>
+              {{/if}}
+            </div>
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+        {{/if}}
+
+        <!-- Education and Training -->
+        {{#if settings.sections.education}}
+        {{#if education}}
+        <div class="section">
+          <div class="section-title">Education and Training</div>
+          {{#each education}}
+          <div class="education-item">
+            <div class="education-dates">
+              [ {{formatDate this.startDate}} –
+              {{#if this.currentlyStudying}}Current{{else}}{{formatDate this.endDate}}{{/if}} ]
+            </div>
+            <div class="education-main">
+              <div class="education-degree">{{this.degree}}</div>
+              <div class="education-institution">{{this.institution}}</div>
+
+              <div class="education-meta">
+                {{#if this.city}}
+                <span class="meta-label">City:</span> {{this.city}}
+                {{/if}}
+                {{#if this.country}}
+                <span style="margin: 0 10px;">|</span>
+                <span class="meta-label">Country:</span> {{this.country}}
+                {{/if}}
+              </div>
+
+              {{#if this.fieldOfStudy}}
+              <div class="education-meta">
+                <span class="meta-label">Field(s) of study:</span> {{this.fieldOfStudy}}
+              </div>
+              {{/if}}
+
+              {{#if this.description}}
+              <div class="education-description">{{this.description}}</div>
+              {{/if}}
+            </div>
+          </div>
+          {{/each}}
+        </div>
+        {{/if}}
+        {{/if}}
+      </main>
+    </div>
+  </div>
+</body>
+</html>
