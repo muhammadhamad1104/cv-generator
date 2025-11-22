@@ -14,10 +14,11 @@ class StorageService:
     """Service for file storage operations"""
     
     def __init__(self):
-        # Use local uploads directory within cv-generator folder
+        # Use C:\Downloads\cv-generator for easy access to generated PDFs
         self.upload_base_dir = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            'uploads'
+            'C:\\',
+            'Downloads',
+            'cv-generator'
         )
     
     async def save_cv_file(

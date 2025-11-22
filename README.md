@@ -40,7 +40,7 @@ cv-generator/
 │   ├── generate_cv.py     # CV generation tool
 │   └── profile_tools.py   # Profile CRUD tools
 └── uploads/
-    └── cv/                # Generated PDFs
+    └── cv/                # Generated PDFs saved to C:\Downloads\cv-generator\
 ```
 
 ## 🚀 Quick Start
@@ -263,7 +263,12 @@ The server uses stdio transport - FastMCP will handle this automatically
 - Main file: `server.py`
 - Command: `python server.py`
 
-4. **Important Notes:**
+4. **PDF Download Location:**
+- Generated PDFs are saved to: `C:\Downloads\cv-generator\`
+- Automatically creates the directory if it doesn't exist
+- Files named as: `cv_<cvId>_<timestamp>.pdf`
+
+5. **Important Notes:**
 - Completely standalone - no backend required
 - MongoDB Atlas recommended for cloud deployment
 - Templates are embedded in `templates/cv/` directory
