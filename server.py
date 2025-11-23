@@ -176,22 +176,22 @@ class CVGeneratorMCPServer:
             
             mongo_uri = os.getenv('MONGO_URI')
             if mongo_uri:
-                logger.info(f"✅ MONGO_URI found (length: {len(mongo_uri)})")
+                logger.info(f"MONGO_URI found (length: {len(mongo_uri)})")
             else:
-                logger.error("❌ MONGO_URI not found in environment")
+                logger.error("MONGO_URI not found in environment")
                 raise ValueError("MONGO_URI environment variable is required")
             
             # Connect to database
             logger.info("Connecting to MongoDB...")
             await connect_db()
-            logger.info("✅ Database connected successfully")
+            logger.info("Database connected successfully")
             
             # Start MCP server with stdio transport
             logger.info("Starting MCP server with stdio transport...")
             async with stdio_server() as (read_stream, write_stream):
                 logger.info("=" * 50)
-                logger.info("🚀 CV Generator MCP Server is running!")
-                logger.info(f"📦 Available tools: {', '.join(t.name for t in self.tools)}")
+                logger.info("CV Generator MCP Server is running!")
+                logger.info(f"Available tools: {', '.join(t.name for t in self.tools)}")
                 logger.info("=" * 50)
                 
                 await self.server.run(
@@ -201,7 +201,7 @@ class CVGeneratorMCPServer:
                 )
         except Exception as error:
             logger.error("=" * 50)
-            logger.error(f"❌ MCP Server failed to start: {str(error)}")
+            logger.error(f"MCP Server failed to start: {str(error)}")
             logger.error(f"Error type: {type(error).__name__}")
             logger.error("=" * 50)
             import traceback
@@ -215,7 +215,7 @@ async def main():
     mongo_uri = os.getenv('MONGO_URI')
     if not mongo_uri:
         logger.error("=" * 60)
-        logger.error("❌ FATAL: MONGO_URI environment variable not set!")
+        logger.error("FATAL: MONGO_URI environment variable not set!")
         logger.error("=" * 60)
         logger.error("Please set MONGO_URI in your environment variables:")
         logger.error("  - For FastMCP: Add MONGO_URI in Environment Variables section")

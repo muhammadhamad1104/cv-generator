@@ -42,10 +42,10 @@ async def connect_db():
         # Test connection
         await db_client.admin.command('ping')
         
-        logger.info(f"✅ Connected to MongoDB database: {database.name}")
+        logger.info(f"Connected to MongoDB database: {database.name}")
         
     except Exception as error:
-        logger.error(f"❌ Database connection error: {str(error)}")
+        logger.error(f"Database connection error: {str(error)}")
         logger.error(f"Error type: {type(error).__name__}")
         raise
 
