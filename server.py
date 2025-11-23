@@ -15,9 +15,12 @@ import os
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Load environment variables FIRST
-from dotenv import load_dotenv
-load_dotenv()
+# Load environment variables (optional - FastMCP provides them via environment)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass  # dotenv is optional, environment variables may be set directly
 
 from typing import Any, Dict, Optional
 
@@ -30,6 +33,7 @@ from mcp.types import (
     ListToolsResult,
 )
 
+# Import connect_db but don't call it at module level
 from config.database import connect_db
 # Tools imported lazily to avoid initialization errors
 

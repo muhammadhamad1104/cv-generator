@@ -5,10 +5,13 @@ Database configuration and connection
 import os
 import logging
 from motor.motor_asyncio import AsyncIOMotorClient
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables (optional - may be set directly in container)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass  # dotenv is optional
 
 logger = logging.getLogger(__name__)
 
