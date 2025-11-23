@@ -101,6 +101,7 @@ def get_tools():
     global tools_cache
     if tools_cache is None:
         from tools.generate_cv import GenerateCVTool
+        from tools.download_cv import DownloadCVTool
         from tools.profile_tools import (
             GetProfileTool,
             CreateProfileTool,
@@ -110,6 +111,7 @@ def get_tools():
         
         tools_cache = {
             'generate_cv': GenerateCVTool(),
+            'download_cv': DownloadCVTool(),
             'get_profile': GetProfileTool(),
             'create_profile': CreateProfileTool(),
             'update_profile': UpdateProfileTool(),
@@ -273,4 +275,20 @@ async def delete_profile(userId: str) -> Dict[str, Any]:
     
     arguments = {'userId': userId}
     result = await tool.execute(arguments)
+    return result
+
+
+# ============================================
+# MCP Tool: Download CV
+# ============================================
+
+@mcp.tool()
+async def download_cv(cvId: str) -> Dict[str, Any]:
+    """Download an existing CV as base64 PDF data for local saving"""
+    tools = get_tools()
+    tool = tools['download_cv']
+    
+    arguments = {'cvId': cvId}
+    result = await tool.execute(arguments)
+    return result
     return result
