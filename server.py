@@ -127,7 +127,7 @@ async def generate_cv(
     userId: str,
     template: str = "modern"
 ) -> Dict[str, Any]:
-    """Generate a professional CV from user profile data. Supports Classic, Modern, and Europass templates."""
+    """Generate a professional CV from user profile data. Supports Classic, Modern, and Europass templates. Returns PDF as base64 for local download."""
     tools = get_tools()
     tool = tools['generate_cv']
     
