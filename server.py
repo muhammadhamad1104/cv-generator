@@ -177,8 +177,11 @@ async def create_profile(
 ) -> Dict[str, Any]:
     """Create a new user profile with complete personal and professional information.
     
+    userId: Provide any identifier (email, username, etc.) - will auto-generate valid MongoDB ID if needed
     personalInfo must include: firstName, lastName, email, phone, address, city, country
     Optional in personalInfo: postalCode, dateOfBirth, nationality, gender, profilePhoto
+    
+    Returns the actual userId used (either valid provided ID or newly generated one)
     """
     tools = get_tools()
     tool = tools['create_profile']

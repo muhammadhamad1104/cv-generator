@@ -155,8 +155,17 @@ class CreateProfileTool:
         try:
             profiles_collection = get_collection('profiles')
             
+            # Validate and convert userId to ObjectId
+            # If invalid format, generate new ObjectId
+            try:
+                user_object_id = ObjectId(user_id)
+            except:
+                # Generate new valid ObjectId if provided ID is invalid
+                user_object_id = ObjectId()
+                logger.info(f"Generated new ObjectId: {user_object_id} (provided userId was invalid)")
+            
             # Check if profile already exists
-            existing = await profiles_collection.find_one({'user': ObjectId(user_id)})
+            existing = await profiles_collection.find_one({'user': user_object_id})
             if existing:
                 return {
                     'success': False,
@@ -165,7 +174,7 @@ class CreateProfileTool:
             
             # Create profile document
             profile_data = {
-                'user': ObjectId(user_id),
+                'user': user_object_id,
                 'personalInfo': args.get('personalInfo', {}),
                 'headline': args.get('headline', ''),
                 'summary': args.get('summary', ''),
@@ -189,6 +198,7 @@ class CreateProfileTool:
             return {
                 'success': True,
                 'message': 'Profile created successfully',
+                'userId': str(user_object_id),
                 'profile': profile_data,
             }
             

@@ -14,12 +14,14 @@ class StorageService:
     """Service for file storage operations"""
     
     def __init__(self):
-        # Use C:\Downloads\cv-generator for easy access to generated PDFs
+        # Use temporary directory for CV storage (works in cloud/local)
+        import tempfile
         self.upload_base_dir = os.path.join(
-            'C:\\',
-            'Downloads',
+            tempfile.gettempdir(),
             'cv-generator'
         )
+        # Create base directory if it doesn't exist
+        os.makedirs(self.upload_base_dir, exist_ok=True)
     
     async def save_cv_file(
         self,
