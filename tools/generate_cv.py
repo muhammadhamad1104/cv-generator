@@ -163,7 +163,11 @@ class GenerateCVTool:
             
             # Get absolute file path
             import os
+            import base64
             absolute_path = os.path.abspath(file_info['filepath'])
+            
+            # Encode PDF as base64 for download through Claude Desktop
+            pdf_base64 = base64.b64encode(pdf_buffer).decode('utf-8')
             
             return {
                 'success': True,
@@ -175,9 +179,11 @@ class GenerateCVTool:
                     'fileSize': file_info['size'],
                     'filePath': file_info['filepath'],
                     'absolutePath': absolute_path,
+                    'filename': file_info['filename'],
                     'createdAt': cv.get('createdAt'),
+                    'pdfBase64': pdf_base64,
                 },
-                'message': f"CV generated successfully! File saved to: {absolute_path}",
+                'message': f"CV generated successfully! File: {file_info['filename']}. You can download the PDF from the base64 data provided.",
             }
             
         except Exception as error:
