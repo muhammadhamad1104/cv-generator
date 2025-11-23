@@ -1,0 +1,5 @@
+{
+  "entrypoint": "server.py:server",
+  "name": "cv-generator-mcp",
+  "description": "CV Generator MCP Server - Generate professional CVs from user profiles"
+}
