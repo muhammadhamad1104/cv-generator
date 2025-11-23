@@ -1,6 +1,6 @@
 # Python MCP Server Dependencies
-# Model Context Protocol SDK
-mcp>=1.0.0
+# FastMCP for HTTP transport (required for FastMCP cloud)
+fastmcp>=0.2.0
 
 # Database
 motor>=3.3.0
