@@ -14,12 +14,22 @@ class StorageService:
     """Service for file storage operations"""
     
     def __init__(self):
-        # Use temporary directory for CV storage (works in cloud/local)
-        import tempfile
-        self.upload_base_dir = os.path.join(
-            tempfile.gettempdir(),
-            'cv-generator'
-        )
+        # Use user's Downloads folder for easy access
+        # Works on Windows, Mac, Linux
+        import platform
+        
+        if platform.system() == 'Windows':
+            # Windows: C:\Users\Username\Downloads\cv-generator
+            downloads = os.path.join(os.path.expanduser('~'), 'Downloads')
+        elif platform.system() == 'Darwin':
+            # Mac: /Users/Username/Downloads/cv-generator
+            downloads = os.path.join(os.path.expanduser('~'), 'Downloads')
+        else:
+            # Linux: /home/username/Downloads/cv-generator
+            downloads = os.path.join(os.path.expanduser('~'), 'Downloads')
+        
+        self.upload_base_dir = os.path.join(downloads, 'cv-generator')
+        
         # Create base directory if it doesn't exist
         os.makedirs(self.upload_base_dir, exist_ok=True)
     
