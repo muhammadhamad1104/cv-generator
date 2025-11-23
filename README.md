@@ -4,7 +4,7 @@
 
 ## ✨ Features
 
-- **Beautiful Template-Based PDFs**: Uses WeasyPrint to render HTML/CSS templates to stunning PDFs
+- **Beautiful Template-Based PDFs**: Uses xhtml2pdf to render HTML/CSS templates to stunning PDFs (pure Python, cloud-compatible)
 - **Complete Profile CRUD**: Create, read, update, delete profiles
 - **Three Professional Templates**: Classic, Modern, Europass (with beautiful styling)
 - **MongoDB Integration**: Async database operations with Motor
@@ -26,7 +26,7 @@ cv-generator/
 │   ├── cv.py              # CV schema
 │   └── user.py            # User schema
 ├── services/
-│   ├── cv_service.py      # PDF generation with WeasyPrint
+│   ├── cv_service.py      # PDF generation with xhtml2pdf
 │   └── storage_service.py # Local file storage
 ├── tools/
 │   ├── generate_cv.py     # CV generation tool
@@ -61,7 +61,7 @@ python verify.py
 
 This checks:
 - ✅ All files present
-- ✅ Python packages installed (WeasyPrint, pybars3, Motor, Pillow)
+- ✅ Python packages installed (xhtml2pdf, pybars3, Motor, Pillow)
 - ✅ Environment configured
 - ✅ Tools loaded correctly
 
@@ -212,10 +212,10 @@ Delete a user profile completely.
    - `update_profile`: Updates existing profile
    - `delete_profile`: Deletes profile from MongoDB
 3. **Services** handle business logic:
-   - `cv_service`: Validates data, renders Handlebars templates, generates PDF using WeasyPrint
+   - `cv_service`: Validates data, renders Handlebars templates, generates PDF using xhtml2pdf
    - `storage_service`: Saves generated files to `uploads/cv/`
 4. **Database** (MongoDB): Stores profiles, CV metadata
-5. **PDF Generation**: WeasyPrint renders beautiful HTML/CSS templates to PDF
+5. **PDF Generation**: xhtml2pdf renders beautiful HTML/CSS templates to PDF (pure Python, cloud-compatible)
 
 ## 📦 Deployment
 
@@ -263,10 +263,10 @@ The server uses stdio transport - FastMCP will handle this automatically
 - Files named as: `cv_<cvId>_<timestamp>.pdf`
 
 5. **Important Notes:**
-- Beautiful PDFs generated from HTML/CSS templates
+- Beautiful PDFs generated from HTML/CSS templates (pure Python, cloud-compatible)
 - MongoDB Atlas recommended for cloud deployment
 - Templates are Handlebars (.hbs) files with embedded CSS
-- PDFs generated using WeasyPrint HTML-to-PDF renderer
+- PDFs generated using xhtml2pdf HTML-to-PDF renderer
 
 ### Claude Desktop Configuration
 
@@ -328,7 +328,7 @@ Templates are beautiful Handlebars (.hbs) files with embedded CSS, located in `t
 - `classic.hbs` - Traditional professional layout with sidebar
 - `europass.hbs` - EU-standard format with gradient sidebar
 
-The `cv_service.py` uses pybars3 to compile templates and WeasyPrint to render HTML+CSS to PDF.
+The `cv_service.py` uses pybars3 to compile templates and xhtml2pdf to render HTML+CSS to PDF.
 
 **Usage:**
 ```python

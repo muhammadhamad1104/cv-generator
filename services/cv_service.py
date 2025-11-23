@@ -1,6 +1,6 @@
 """
 CV Service - Standalone CV generation and validation
-Generates beautiful PDFs from Handlebars templates using WeasyPrint
+Generates beautiful PDFs from Handlebars templates using xhtml2pdf
 """
 
 import logging
@@ -12,7 +12,7 @@ from io import BytesIO
 import base64
 
 from pybars import Compiler
-from weasyprint import HTML, CSS
+from xhtml2pdf import pisa
 
 logger = logging.getLogger(__name__)
 
@@ -84,8 +84,8 @@ class CVService:
         template: str
     ) -> bytes:
         """
-        Generate CV PDF using Handlebars templates and WeasyPrint
-        Renders beautiful HTML/CSS templates to PDF
+        Generate CV PDF using Handlebars templates and xhtml2pdf
+        Renders beautiful HTML/CSS templates to PDF (cloud-compatible, pure Python)
         """
         try:
             # Prepare data for template
@@ -107,9 +107,16 @@ class CVService:
             # Render with data and helpers
             html_content = compiled_template(data, helpers=self._get_helpers())
             
-            # Generate PDF from HTML
+            # Generate PDF from HTML using xhtml2pdf
             pdf_buffer = BytesIO()
-            HTML(string=html_content, base_url=str(self.templates_dir)).write_pdf(pdf_buffer)
+            pisa_status = pisa.CreatePDF(
+                html_content,
+                dest=pdf_buffer,
+                encoding='utf-8'
+            )
+            
+            if pisa_status.err:
+                raise Exception(f"PDF generation failed with errors")
             
             # Get PDF bytes
             pdf_bytes = pdf_buffer.getvalue()
