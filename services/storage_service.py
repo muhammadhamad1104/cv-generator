@@ -14,24 +14,24 @@ class StorageService:
     """Service for file storage operations"""
     
     def __init__(self):
-        # Use user's Downloads folder for easy access
-        # Works on Windows, Mac, Linux
-        import platform
+        # Detect environment: local vs cloud
+        # On FastMCP cloud, use /app/storage (persistent)
+        # On local, use Downloads folder for easy access
         
-        if platform.system() == 'Windows':
-            # Windows: C:\Users\Username\Downloads\cv-generator
-            downloads = os.path.join(os.path.expanduser('~'), 'Downloads')
-        elif platform.system() == 'Darwin':
-            # Mac: /Users/Username/Downloads/cv-generator
-            downloads = os.path.join(os.path.expanduser('~'), 'Downloads')
+        # Check if running on FastMCP cloud
+        is_fastmcp_cloud = os.path.exists('/app') and not os.path.exists(os.path.expanduser('~/Downloads'))
+        
+        if is_fastmcp_cloud:
+            # FastMCP cloud: use /app/storage (persistent volume)
+            self.upload_base_dir = '/app/storage/cv-generator'
         else:
-            # Linux: /home/username/Downloads/cv-generator
+            # Local environment: use Downloads folder
             downloads = os.path.join(os.path.expanduser('~'), 'Downloads')
-        
-        self.upload_base_dir = os.path.join(downloads, 'cv-generator')
+            self.upload_base_dir = os.path.join(downloads, 'cv-generator')
         
         # Create base directory if it doesn't exist
         os.makedirs(self.upload_base_dir, exist_ok=True)
+        logger.info(f"Storage initialized at: {self.upload_base_dir}")
     
     async def save_cv_file(
         self,
