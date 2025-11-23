@@ -59,14 +59,21 @@ server = Server("cv-generator-mcp")
 mcp = server  # Alternative name for FastMCP
 app = server  # Another alternative name
 
-# Initialize tools
-tools = [
-    GenerateCVTool(),
-    GetProfileTool(),
-    CreateProfileTool(),
-    UpdateProfileTool(),
-    DeleteProfileTool(),
-]
+# Tools will be initialized lazily
+tools = None
+
+def get_tools():
+    """Lazy initialization of tools"""
+    global tools
+    if tools is None:
+        tools = [
+            GenerateCVTool(),
+            GetProfileTool(),
+            CreateProfileTool(),
+            UpdateProfileTool(),
+            DeleteProfileTool(),
+        ]
+    return tools
 
 
 # ============================================
@@ -76,6 +83,7 @@ tools = [
 @server.list_tools()
 async def list_tools() -> ListToolsResult:
     """List all available tools"""
+    tool_list = get_tools()
     return ListToolsResult(
         tools=[
             Tool(
@@ -83,7 +91,7 @@ async def list_tools() -> ListToolsResult:
                 description=tool.description,
                 inputSchema=tool.input_schema
             )
-            for tool in tools
+            for tool in tool_list
         ]
     )
 
@@ -91,8 +99,10 @@ async def list_tools() -> ListToolsResult:
 @server.call_tool()
 async def call_tool(name: str, arguments: Dict[str, Any]) -> CallToolResult:
     """Execute a tool by name"""
+    tool_list = get_tools()
+    
     # Find the tool
-    tool = next((t for t in tools if t.name == name), None)
+    tool = next((t for t in tool_list if t.name == name), None)
     
     if not tool:
         logger.error(f"Tool not found: {name}")
@@ -147,7 +157,7 @@ class CVGeneratorMCPServer:
     
     def __init__(self):
         self.server = server
-        self.tools = tools
+        self.tools = get_tools()
     
     async def start(self):
         """Start the MCP server"""
