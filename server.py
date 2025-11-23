@@ -162,43 +162,42 @@ async def get_profile(userId: str) -> Dict[str, Any]:
 @mcp.tool()
 async def create_profile(
     userId: str,
-    name: str,
-    email: str,
-    phone: str,
-    address: str,
-    summary: str,
-    experience: list,
-    education: list,
-    skills: list,
+    personalInfo: dict,
+    summary: str = "",
+    headline: str = "",
+    workExperience: list = None,
+    education: list = None,
+    skills: list = None,
     languages: list = None,
     certifications: list = None,
     projects: list = None,
-    profilePhoto: str = None
+    socialLinks: dict = None,
+    hobbies: list = None,
+    references: list = None
 ) -> Dict[str, Any]:
-    """Create a new user profile with personal and professional information"""
+    """Create a new user profile with complete personal and professional information.
+    
+    personalInfo must include: firstName, lastName, email, phone, address, city, country
+    Optional in personalInfo: postalCode, dateOfBirth, nationality, gender, profilePhoto
+    """
     tools = get_tools()
     tool = tools['create_profile']
     
     arguments = {
         'userId': userId,
-        'name': name,
-        'email': email,
-        'phone': phone,
-        'address': address,
+        'personalInfo': personalInfo,
         'summary': summary,
-        'experience': experience,
-        'education': education,
-        'skills': skills,
+        'headline': headline,
+        'workExperience': workExperience or [],
+        'education': education or [],
+        'skills': skills or [],
+        'languages': languages or [],
+        'certifications': certifications or [],
+        'projects': projects or [],
+        'socialLinks': socialLinks or {},
+        'hobbies': hobbies or [],
+        'references': references or []
     }
-    
-    if languages is not None:
-        arguments['languages'] = languages
-    if certifications is not None:
-        arguments['certifications'] = certifications
-    if projects is not None:
-        arguments['projects'] = projects
-    if profilePhoto is not None:
-        arguments['profilePhoto'] = profilePhoto
     
     result = await tool.execute(arguments)
     return result
@@ -211,37 +210,33 @@ async def create_profile(
 @mcp.tool()
 async def update_profile(
     userId: str,
-    name: str = None,
-    email: str = None,
-    phone: str = None,
-    address: str = None,
+    personalInfo: dict = None,
     summary: str = None,
-    experience: list = None,
+    headline: str = None,
+    workExperience: list = None,
     education: list = None,
     skills: list = None,
     languages: list = None,
     certifications: list = None,
     projects: list = None,
-    profilePhoto: str = None
+    socialLinks: dict = None,
+    hobbies: list = None,
+    references: list = None
 ) -> Dict[str, Any]:
-    """Update an existing user profile with new information"""
+    """Update an existing user profile. Only provided fields will be updated."""
     tools = get_tools()
     tool = tools['update_profile']
     
     arguments = {'userId': userId}
     
-    if name is not None:
-        arguments['name'] = name
-    if email is not None:
-        arguments['email'] = email
-    if phone is not None:
-        arguments['phone'] = phone
-    if address is not None:
-        arguments['address'] = address
+    if personalInfo is not None:
+        arguments['personalInfo'] = personalInfo
     if summary is not None:
         arguments['summary'] = summary
-    if experience is not None:
-        arguments['experience'] = experience
+    if headline is not None:
+        arguments['headline'] = headline
+    if workExperience is not None:
+        arguments['workExperience'] = workExperience
     if education is not None:
         arguments['education'] = education
     if skills is not None:
@@ -252,8 +247,12 @@ async def update_profile(
         arguments['certifications'] = certifications
     if projects is not None:
         arguments['projects'] = projects
-    if profilePhoto is not None:
-        arguments['profilePhoto'] = profilePhoto
+    if socialLinks is not None:
+        arguments['socialLinks'] = socialLinks
+    if hobbies is not None:
+        arguments['hobbies'] = hobbies
+    if references is not None:
+        arguments['references'] = references
     
     result = await tool.execute(arguments)
     return result

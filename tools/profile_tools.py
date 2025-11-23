@@ -85,11 +85,14 @@ class CreateProfileTool:
                         'address': {'type': 'string'},
                         'city': {'type': 'string'},
                         'country': {'type': 'string'},
+                        'postalCode': {'type': 'string'},
                         'dateOfBirth': {'type': 'string'},
                         'nationality': {'type': 'string'},
+                        'gender': {'type': 'string'},
                         'profilePhoto': {'type': 'string'},
                     },
                 },
+                'headline': {'type': 'string', 'description': 'Professional headline'},
                 'summary': {'type': 'string', 'description': 'Professional summary'},
                 'workExperience': {
                     'type': 'array',
@@ -131,6 +134,16 @@ class CreateProfileTool:
                         'twitter': {'type': 'string'},
                     },
                 },
+                'hobbies': {
+                    'type': 'array',
+                    'description': 'Hobbies and interests',
+                    'items': {'type': 'string'},
+                },
+                'references': {
+                    'type': 'array',
+                    'description': 'Professional references',
+                    'items': {'type': 'object'},
+                },
             },
             'required': ['userId', 'personalInfo'],
         }
@@ -154,6 +167,7 @@ class CreateProfileTool:
             profile_data = {
                 'user': ObjectId(user_id),
                 'personalInfo': args.get('personalInfo', {}),
+                'headline': args.get('headline', ''),
                 'summary': args.get('summary', ''),
                 'workExperience': args.get('workExperience', []),
                 'education': args.get('education', []),
@@ -162,6 +176,8 @@ class CreateProfileTool:
                 'certifications': args.get('certifications', []),
                 'projects': args.get('projects', []),
                 'socialLinks': args.get('socialLinks', {}),
+                'hobbies': args.get('hobbies', []),
+                'references': args.get('references', []),
                 'createdAt': datetime.utcnow(),
                 'updatedAt': datetime.utcnow(),
             }
@@ -201,6 +217,7 @@ class UpdateProfileTool:
                     'type': 'object',
                     'description': 'Personal information to update',
                 },
+                'headline': {'type': 'string'},
                 'summary': {'type': 'string'},
                 'workExperience': {'type': 'array', 'items': {'type': 'object'}},
                 'education': {'type': 'array', 'items': {'type': 'object'}},
@@ -209,6 +226,8 @@ class UpdateProfileTool:
                 'certifications': {'type': 'array', 'items': {'type': 'object'}},
                 'projects': {'type': 'array', 'items': {'type': 'object'}},
                 'socialLinks': {'type': 'object'},
+                'hobbies': {'type': 'array', 'items': {'type': 'string'}},
+                'references': {'type': 'array', 'items': {'type': 'object'}},
             },
             'required': ['userId'],
         }
