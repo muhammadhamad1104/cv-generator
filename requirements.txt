@@ -9,9 +9,12 @@ pymongo
 # Environment variables
 python-dotenv
 
-# PDF Generation - HTML to PDF conversion (pure Python, cloud-compatible)
+# PDF Generation - xhtml2pdf with all dependencies
 xhtml2pdf
-pybars3
-
-# Image processing for profile photos
+reportlab
+html5lib
+pypdf
 Pillow
+pybars3
+arabic-reshaper
+python-bidi
