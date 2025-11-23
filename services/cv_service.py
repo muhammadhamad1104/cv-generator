@@ -251,7 +251,8 @@ class CVService:
         skills = data.get('skills', [])
         if skills and data.get('settings', {}).get('sections', {}).get('skills', True):
             story.append(Paragraph('SKILLS', self.styles['SectionHeading']))
-            skills_text = ' • '.join(skills)
+            skills_list = [f"{s.get('name', '')} ({s.get('level', '')})" if isinstance(s, dict) else str(s) for s in skills]
+            skills_text = ' • '.join(skills_list)
             story.append(Paragraph(skills_text, self.styles['Description']))
             story.append(Spacer(1, 12))
         
@@ -268,7 +269,7 @@ class CVService:
         if languages and data.get('settings', {}).get('sections', {}).get('languages', True):
             story.append(Paragraph('LANGUAGES', self.styles['SectionHeading']))
             for lang in languages:
-                lang_text = f"<b>{lang.get('name', '')}</b> - {lang.get('proficiency', '')}"
+                lang_text = f"<b>{lang.get('language', '')}</b> - {lang.get('proficiency', '')}"
                 story.append(Paragraph(lang_text, self.styles['Description']))
             story.append(Spacer(1, 12))
         
@@ -368,7 +369,8 @@ class CVService:
         if skills and data.get('settings', {}).get('sections', {}).get('skills', True):
             story.append(Paragraph('SKILLS', classic_section_style))
             story.append(HRFlowable(width="100%", thickness=1, color=black, spaceAfter=8))
-            skills_text = ' • '.join(skills)
+            skills_list = [f"{s.get('name', '')} ({s.get('level', '')})" if isinstance(s, dict) else str(s) for s in skills]
+            skills_text = ' • '.join(skills_list)
             story.append(Paragraph(skills_text, self.styles['Description']))
             story.append(Spacer(1, 12))
         
@@ -378,7 +380,7 @@ class CVService:
             story.append(Paragraph('LANGUAGES', classic_section_style))
             story.append(HRFlowable(width="100%", thickness=1, color=black, spaceAfter=8))
             for lang in languages:
-                lang_text = f"<b>{lang.get('name', '')}</b>: {lang.get('proficiency', '')}"
+                lang_text = f"<b>{lang.get('language', '')}</b>: {lang.get('proficiency', '')}"
                 story.append(Paragraph(lang_text, self.styles['Description']))
             story.append(Spacer(1, 12))
         
@@ -489,7 +491,7 @@ class CVService:
                         story.append(Paragraph(f'<b>Mother tongue:</b> {lang.get("name", "")}', self.styles['Description']))
                     else:
                         # Other languages with CEFR levels
-                        lang_name = lang.get('name', '')
+                        lang_name = lang.get('language', '')
                         proficiency = lang.get('proficiency', '')
                         story.append(Paragraph(f'<b>{lang_name}:</b> {proficiency}', self.styles['Description']))
                 story.append(Spacer(1, 6))
@@ -497,7 +499,8 @@ class CVService:
             # Technical/Professional Skills
             if skills:
                 story.append(Paragraph('<b>Technical Skills:</b>', self.styles['Description']))
-                skills_text = ', '.join(skills)
+                skills_list = [f"{s.get('name', '')} ({s.get('level', '')})" if isinstance(s, dict) else str(s) for s in skills]
+                skills_text = ', '.join(skills_list)
                 story.append(Paragraph(skills_text, self.styles['Description']))
             
             story.append(Spacer(1, 10))
@@ -517,15 +520,22 @@ class CVService:
         elements = []
         
         # Job title
-        if exp.get('title'):
-            elements.append(Paragraph(exp['title'], self.styles['JobTitle']))
+        if exp.get('jobTitle'):
+            elements.append(Paragraph(exp['jobTitle'], self.styles['JobTitle']))
         
         # Company and dates
         company_info = []
-        if exp.get('company'):
-            company_info.append(f"<b>{exp['company']}</b>")
-        if exp.get('location'):
-            company_info.append(exp['location'])
+        if exp.get('employer'):
+            company_info.append(f"<b>{exp['employer']}</b>")
+        
+        # Build location from city and country
+        location_parts = []
+        if exp.get('city'):
+            location_parts.append(exp['city'])
+        if exp.get('country'):
+            location_parts.append(exp['country'])
+        if location_parts:
+            company_info.append(', '.join(location_parts))
         
         if company_info:
             elements.append(Paragraph(' | '.join(company_info), self.styles['Company']))
@@ -576,9 +586,9 @@ class CVService:
         """Build project section"""
         elements = []
         
-        # Project name
-        if project.get('name'):
-            elements.append(Paragraph(project['name'], self.styles['JobTitle']))
+        # Project title
+        if project.get('title'):
+            elements.append(Paragraph(project['title'], self.styles['JobTitle']))
         
         # Technologies
         if project.get('technologies'):
@@ -590,8 +600,8 @@ class CVService:
             elements.append(Paragraph(project['description'], self.styles['Description']))
         
         # Links
-        if project.get('link'):
-            elements.append(Paragraph(f"<a href='{project['link']}'>{project['link']}</a>", self.styles['Contact']))
+        if project.get('url'):
+            elements.append(Paragraph(f"<a href='{project['url']}'>{project['url']}</a>", self.styles['Contact']))
         
         elements.append(Spacer(1, 8))
         return elements
