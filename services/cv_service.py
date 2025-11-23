@@ -1,6 +1,6 @@
 """
 CV Service - Standalone CV generation and validation
-Generates beautiful PDFs from Handlebars templates using xhtml2pdf
+Generates beautiful PDFs from Handlebars templates - Pure Python implementation
 """
 
 import logging
@@ -10,9 +10,18 @@ from pathlib import Path
 from datetime import datetime
 from io import BytesIO
 import base64
+import re
 
 from pybars import Compiler
-from xhtml2pdf import pisa
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY
+from reportlab.lib.colors import HexColor, black, white
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, KeepTogether
+from reportlab.pdfgen import canvas
+import html5lib
+from xml.etree import ElementTree as ET
 
 logger = logging.getLogger(__name__)
 
@@ -84,39 +93,31 @@ class CVService:
         template: str
     ) -> bytes:
         """
-        Generate CV PDF using Handlebars templates and xhtml2pdf
-        Renders beautiful HTML/CSS templates to PDF (cloud-compatible, pure Python)
+        Generate CV PDF - renders templates to styled reportlab PDF
+        Pure Python, cloud-compatible
         """
         try:
             # Prepare data for template
             data = self._prepare_template_data(profile, settings)
             
-            # Load template file
-            template_file = self.templates_dir / f"{template}.hbs"
-            if not template_file.exists():
-                logger.warning(f"Template {template} not found, using classic")
-                template_file = self.templates_dir / "classic.hbs"
-            
-            # Read template
-            with open(template_file, 'r', encoding='utf-8') as f:
-                template_content = f.read()
-            
-            # Compile template
-            compiled_template = self.compiler.compile(template_content)
-            
-            # Render with data and helpers
-            html_content = compiled_template(data, helpers=self._get_helpers())
-            
-            # Generate PDF from HTML using xhtml2pdf
+            # Generate PDF using reportlab with template styling
             pdf_buffer = BytesIO()
-            pisa_status = pisa.CreatePDF(
-                html_content,
-                dest=pdf_buffer,
-                encoding='utf-8'
+            
+            # Create PDF document
+            doc = SimpleDocTemplate(
+                pdf_buffer,
+                pagesize=A4,
+                rightMargin=20*mm,
+                leftMargin=20*mm,
+                topMargin=15*mm,
+                bottomMargin=15*mm
             )
             
-            if pisa_status.err:
-                raise Exception(f"PDF generation failed with errors")
+            # Build styled content based on template
+            story = self._build_template_content(data, template)
+            
+            # Build PDF
+            doc.build(story)
             
             # Get PDF bytes
             pdf_bytes = pdf_buffer.getvalue()
@@ -128,6 +129,214 @@ class CVService:
         except Exception as error:
             logger.error(f"Error generating CV PDF: {str(error)}", exc_info=True)
             raise Exception(f"Failed to generate CV PDF: {str(error)}")
+    
+    def _build_template_content(self, data: Dict[str, Any], template: str) -> List:
+        """Build PDF content with template styling"""
+        # Setup custom styles matching template designs
+        styles = getSampleStyleSheet()
+        
+        # Name style - large, bold
+        name_style = ParagraphStyle(
+            'CVName',
+            parent=styles['Heading1'],
+            fontSize=22,
+            textColor=black,
+            spaceAfter=6,
+            alignment=TA_LEFT if template == 'modern' else TA_CENTER,
+            fontName='Helvetica-Bold'
+        )
+        
+        # Section heading - colored background
+        section_style = ParagraphStyle(
+            'SectionHead',
+            parent=styles['Heading2'],
+            fontSize=12,
+            textColor=white,
+            backColor=HexColor('#0066cc' if template == 'modern' else ('#0054a6' if template == 'classic' else '#2E5090')),
+            spaceAfter=10,
+            spaceBefore=12,
+            leftIndent=10,
+            rightIndent=10,
+            fontName='Helvetica-Bold'
+        )
+        
+        # Job title style
+        job_style = ParagraphStyle(
+            'JobTitle',
+            parent=styles['Normal'],
+            fontSize=11,
+            textColor=black,
+            spaceAfter=4,
+            fontName='Helvetica-BoldOblique'
+        )
+        
+        # Company/institution style
+        company_style = ParagraphStyle(
+            'Company',
+            parent=styles['Normal'],
+            fontSize=10,
+            textColor=black,
+            spaceAfter=2,
+            fontName='Helvetica-Bold'
+        )
+        
+        # Date style
+        date_style = ParagraphStyle(
+            'DateInfo',
+            parent=styles['Normal'],
+            fontSize=9,
+            textColor=black,
+            spaceAfter=4
+        )
+        
+        # Description style
+        desc_style = ParagraphStyle(
+            'Description',
+            parent=styles['Normal'],
+            fontSize=10,
+            textColor=black,
+            spaceAfter=8,
+            alignment=TA_JUSTIFY
+        )
+        
+        # Contact info style
+        contact_style = ParagraphStyle(
+            'Contact',
+            parent=styles['Normal'],
+            fontSize=9,
+            textColor=HexColor('#0066cc'),
+            spaceAfter=2
+        )
+        
+        story = []
+        personal_info = data.get('personalInfo', {})
+        
+        # Header - Name
+        name = f"{personal_info.get('firstName', '')} {personal_info.get('lastName', '')}".strip()
+        if name:
+            story.append(Paragraph(name, name_style))
+        
+        # Contact information
+        contact_parts = []
+        if personal_info.get('email'):
+            contact_parts.append(f"<font color='#0066cc'>{personal_info['email']}</font>")
+        if personal_info.get('phone'):
+            contact_parts.append(personal_info['phone'])
+        if personal_info.get('location') or personal_info.get('city'):
+            location = personal_info.get('location') or f"{personal_info.get('city', '')}, {personal_info.get('country', '')}".strip(', ')
+            contact_parts.append(location)
+        
+        for contact in contact_parts:
+            story.append(Paragraph(contact, contact_style))
+        
+        story.append(Spacer(1, 12))
+        
+        # About Me / Summary
+        if data.get('summary'):
+            story.append(Paragraph('ABOUT ME', section_style))
+            story.append(Paragraph(data['summary'], desc_style))
+            story.append(Spacer(1, 12))
+        
+        # Work Experience
+        work_exp = data.get('workExperience', [])
+        if work_exp and data.get('settings', {}).get('sections', {}).get('workExperience', True):
+            story.append(Paragraph('WORK EXPERIENCE', section_style))
+            for exp in work_exp:
+                if exp.get('jobTitle'):
+                    story.append(Paragraph(exp['jobTitle'], job_style))
+                
+                company_info = []
+                if exp.get('employer'):
+                    company_info.append(f"<b>{exp['employer']}</b>")
+                if exp.get('city') or exp.get('country'):
+                    location = f"{exp.get('city', '')}, {exp.get('country', '')}".strip(', ')
+                    if location:
+                        company_info.append(location)
+                
+                if company_info:
+                    story.append(Paragraph(' | '.join(company_info), company_style))
+                
+                # Dates
+                start_date = self._format_date_helper(None, exp.get('startDate'))
+                end_date = 'Present' if exp.get('currentlyWorking') else self._format_date_helper(None, exp.get('endDate'))
+                story.append(Paragraph(f"{start_date} - {end_date}", date_style))
+                
+                if exp.get('description'):
+                    story.append(Paragraph(exp['description'], desc_style))
+                
+                story.append(Spacer(1, 8))
+            story.append(Spacer(1, 12))
+        
+        # Education
+        education = data.get('education', [])
+        if education and data.get('settings', {}).get('sections', {}).get('education', True):
+            story.append(Paragraph('EDUCATION', section_style))
+            for edu in education:
+                if edu.get('degree'):
+                    story.append(Paragraph(edu['degree'], job_style))
+                if edu.get('institution'):
+                    story.append(Paragraph(edu['institution'], company_style))
+                
+                start_date = self._format_date_helper(None, edu.get('startDate'))
+                end_date = 'Present' if edu.get('currentlyStudying') else self._format_date_helper(None, edu.get('endDate'))
+                story.append(Paragraph(f"{start_date} - {end_date}", date_style))
+                
+                if edu.get('fieldOfStudy'):
+                    story.append(Paragraph(f"<i>{edu['fieldOfStudy']}</i>", date_style))
+                
+                if edu.get('description'):
+                    story.append(Paragraph(edu['description'], desc_style))
+                
+                story.append(Spacer(1, 8))
+            story.append(Spacer(1, 12))
+        
+        # Skills
+        skills = data.get('skills', [])
+        if skills and data.get('settings', {}).get('sections', {}).get('skills', True):
+            story.append(Paragraph('SKILLS', section_style))
+            skills_list = []
+            for s in skills:
+                if isinstance(s, dict):
+                    skill_name = s.get('name', '')
+                    skill_level = s.get('level', '')
+                    if skill_level:
+                        skills_list.append(f"{skill_name} ({skill_level})")
+                    else:
+                        skills_list.append(skill_name)
+                else:
+                    skills_list.append(str(s))
+            skills_text = ' • '.join(skills_list)
+            story.append(Paragraph(skills_text, desc_style))
+            story.append(Spacer(1, 12))
+        
+        # Languages
+        languages = data.get('languages', [])
+        if languages and data.get('settings', {}).get('sections', {}).get('languages', True):
+            story.append(Paragraph('LANGUAGES', section_style))
+            for lang in languages:
+                lang_name = lang.get('language', lang.get('name', ''))
+                proficiency = lang.get('proficiency', '')
+                story.append(Paragraph(f"<b>{lang_name}</b> - {proficiency}", desc_style))
+            story.append(Spacer(1, 12))
+        
+        # Projects
+        projects = data.get('projects', [])
+        if projects and data.get('settings', {}).get('sections', {}).get('projects', True):
+            story.append(Paragraph('PROJECTS', section_style))
+            for project in projects:
+                if project.get('title'):
+                    story.append(Paragraph(project['title'], job_style))
+                if project.get('technologies'):
+                    tech = ', '.join(project['technologies']) if isinstance(project['technologies'], list) else project['technologies']
+                    story.append(Paragraph(f"<i>{tech}</i>", date_style))
+                if project.get('description'):
+                    story.append(Paragraph(project['description'], desc_style))
+                if project.get('url'):
+                    story.append(Paragraph(f"<a href='{project['url']}' color='blue'>{project['url']}</a>", contact_style))
+                story.append(Spacer(1, 8))
+            story.append(Spacer(1, 12))
+        
+        return story
     
     def _prepare_template_data(self, profile: Dict[str, Any], settings: Dict[str, Any]) -> Dict[str, Any]:
         """Prepare data for template rendering"""
