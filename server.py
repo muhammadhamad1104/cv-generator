@@ -31,13 +31,7 @@ from mcp.types import (
 )
 
 from config.database import connect_db
-from tools.generate_cv import GenerateCVTool
-from tools.profile_tools import (
-    GetProfileTool,
-    CreateProfileTool,
-    UpdateProfileTool,
-    DeleteProfileTool,
-)
+# Tools imported lazily to avoid initialization errors
 
 # Configure logging
 logging.basicConfig(
@@ -66,6 +60,15 @@ def get_tools():
     """Lazy initialization of tools"""
     global tools
     if tools is None:
+        # Import tools only when needed
+        from tools.generate_cv import GenerateCVTool
+        from tools.profile_tools import (
+            GetProfileTool,
+            CreateProfileTool,
+            UpdateProfileTool,
+            DeleteProfileTool,
+        )
+        
         tools = [
             GenerateCVTool(),
             GetProfileTool(),
