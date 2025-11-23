@@ -15,23 +15,27 @@ class StorageService:
     
     def __init__(self):
         # Detect environment: local vs cloud
-        # On FastMCP cloud, use /app/storage (persistent)
+        # On FastMCP cloud, use /tmp (writable temp storage)
         # On local, use Downloads folder for easy access
         
         # Check if running on FastMCP cloud
         is_fastmcp_cloud = os.path.exists('/app') and not os.path.exists(os.path.expanduser('~/Downloads'))
         
         if is_fastmcp_cloud:
-            # FastMCP cloud: use /app/storage (persistent volume)
-            self.upload_base_dir = '/app/storage/cv-generator'
+            # FastMCP cloud: use /tmp (writable but ephemeral)
+            # Files are temporary but that's OK since we return base64
+            self.upload_base_dir = '/tmp/cv-generator'
         else:
             # Local environment: use Downloads folder
             downloads = os.path.join(os.path.expanduser('~'), 'Downloads')
             self.upload_base_dir = os.path.join(downloads, 'cv-generator')
         
         # Create base directory if it doesn't exist
-        os.makedirs(self.upload_base_dir, exist_ok=True)
-        logger.info(f"Storage initialized at: {self.upload_base_dir}")
+        try:
+            os.makedirs(self.upload_base_dir, exist_ok=True)
+            logger.info(f"Storage initialized at: {self.upload_base_dir}")
+        except Exception as e:
+            logger.warning(f"Could not create storage directory {self.upload_base_dir}: {e}")
     
     async def save_cv_file(
         self,
