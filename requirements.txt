@@ -1,15 +1,15 @@
-# Python MCP Server Dependencies
-# FastMCP for HTTP transport (required for FastMCP cloud)
+# Core MCP and FastMCP
 fastmcp
+mcp
 
-# Database
+# Database - MongoDB async driver
 motor
 pymongo
 
 # Environment variables
 python-dotenv
 
-# PDF Generation - xhtml2pdf with all dependencies
+# PDF Generation - xhtml2pdf and its dependencies
 xhtml2pdf
 reportlab
 html5lib
@@ -18,3 +18,7 @@ Pillow
 pybars3
 arabic-reshaper
 python-bidi
+six
+
+# Additional utilities
+typing-extensions
