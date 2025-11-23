@@ -1,17 +1,17 @@
 # Python MCP Server Dependencies
 # FastMCP for HTTP transport (required for FastMCP cloud)
-fastmcp>=2.0
+fastmcp
 
 # Database
-motor>=3.3.0
-pymongo>=4.6.0
+motor
+pymongo
 
 # Environment variables
-python-dotenv>=1.0.0
+python-dotenv
 
 # PDF Generation - HTML to PDF conversion (pure Python, cloud-compatible)
-xhtml2pdf>=0.2.15
-pybars3>=0.9.7
+xhtml2pdf
+pybars3
 
 # Image processing for profile photos
-Pillow>=10.0.0
+Pillow
