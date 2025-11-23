@@ -1,70 +1,105 @@
 """
-CV Generator MCP Server (Python Implementation)
-This is a Python version of the Node.js MCP server for CV generation
+CV Generator MCP Server (FastMCP 2.0 Implementation)
+FastMCP-compatible HTTP server for CV generation
 
 Environment Variables Required:
 - MONGO_URI: MongoDB connection string (required)
 """
 
-import asyncio
-import json
 import logging
-import sys
 import os
-
-# Add parent directory to path for imports
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+from typing import Any, Dict
+from contextlib import asynccontextmanager
 
 # Load environment variables (optional - FastMCP provides them via environment)
 try:
     from dotenv import load_dotenv
     load_dotenv()
 except Exception:
-    pass  # dotenv is optional, environment variables may be set directly
+    pass
 
-from typing import Any, Dict, Optional
+from fastmcp import FastMCP
 
-from mcp.server import Server
-from mcp.server.stdio import stdio_server
-from mcp.types import (
-    Tool,
-    TextContent,
-    CallToolResult,
-    ListToolsResult,
-)
-
-# Import connect_db but don't call it at module level
-from config.database import connect_db
-# Tools imported lazily to avoid initialization errors
+# Import connect_db for database initialization
+from config.database import connect_db, close_db
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stderr)
-    ]
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
 
 # ============================================
-# MCP Server Setup (for FastMCP Cloud)
+# Lifespan Context Manager
 # ============================================
 
-# Create MCP server instance at module level
-server = Server("cv-generator-mcp")
-mcp = server  # Alternative name for FastMCP
-app = server  # Another alternative name
+@asynccontextmanager
+async def lifespan(app):
+    """Database connection lifecycle management"""
+    try:
+        logger.info("=" * 50)
+        logger.info("CV Generator MCP Server Starting...")
+        logger.info("=" * 50)
+        
+        # Check for MONGO_URI
+        mongo_uri = os.getenv('MONGO_URI')
+        if mongo_uri:
+            logger.info(f"MONGO_URI found (length: {len(mongo_uri)})")
+        else:
+            logger.error("MONGO_URI not found in environment")
+            raise ValueError("MONGO_URI environment variable is required")
+        
+        # Connect to database
+        logger.info("Connecting to MongoDB...")
+        await connect_db()
+        logger.info("Database connected successfully")
+        
+        logger.info("=" * 50)
+        logger.info("CV Generator MCP Server is running!")
+        logger.info("Available tools: generate_cv, get_profile, create_profile, update_profile, delete_profile")
+        logger.info("=" * 50)
+        
+        yield
+        
+    except Exception as error:
+        logger.error("=" * 50)
+        logger.error(f"MCP Server failed to start: {str(error)}")
+        logger.error(f"Error type: {type(error).__name__}")
+        logger.error("=" * 50)
+        import traceback
+        logger.error(traceback.format_exc())
+        raise
+    finally:
+        # Cleanup on shutdown
+        logger.info("CV Generator MCP Server shutting down...")
+        await close_db()
+        logger.info("Server stopped")
 
-# Tools will be initialized lazily
-tools = None
+
+# ============================================
+# FastMCP Server Setup
+# ============================================
+
+# Create FastMCP server instance with lifespan
+mcp = FastMCP("cv-generator-mcp", lifespan=lifespan)
+
+# Also expose as 'server' and 'app' for compatibility
+server = mcp
+app = mcp
+
+
+# ============================================
+# Lazy Tool Initialization
+# ============================================
+
+tools_cache = None
 
 def get_tools():
-    """Lazy initialization of tools"""
-    global tools
-    if tools is None:
-        # Import tools only when needed
+    """Lazy initialization of tool instances"""
+    global tools_cache
+    if tools_cache is None:
         from tools.generate_cv import GenerateCVTool
         from tools.profile_tools import (
             GetProfileTool,
@@ -73,169 +108,167 @@ def get_tools():
             DeleteProfileTool,
         )
         
-        tools = [
-            GenerateCVTool(),
-            GetProfileTool(),
-            CreateProfileTool(),
-            UpdateProfileTool(),
-            DeleteProfileTool(),
-        ]
-    return tools
+        tools_cache = {
+            'generate_cv': GenerateCVTool(),
+            'get_profile': GetProfileTool(),
+            'create_profile': CreateProfileTool(),
+            'update_profile': UpdateProfileTool(),
+            'delete_profile': DeleteProfileTool(),
+        }
+    return tools_cache
 
 
 # ============================================
-# Register MCP Handlers
+# MCP Tool: Generate CV
 # ============================================
 
-@server.list_tools()
-async def list_tools() -> ListToolsResult:
-    """List all available tools"""
-    tool_list = get_tools()
-    return ListToolsResult(
-        tools=[
-            Tool(
-                name=tool.name,
-                description=tool.description,
-                inputSchema=tool.input_schema
-            )
-            for tool in tool_list
-        ]
-    )
-
-
-@server.call_tool()
-async def call_tool(name: str, arguments: Dict[str, Any]) -> CallToolResult:
-    """Execute a tool by name"""
-    tool_list = get_tools()
+@mcp.tool()
+async def generate_cv(
+    userId: str,
+    template: str = "modern"
+) -> Dict[str, Any]:
+    """Generate a professional CV from user profile data. Supports Classic, Modern, and Europass templates."""
+    tools = get_tools()
+    tool = tools['generate_cv']
     
-    # Find the tool
-    tool = next((t for t in tool_list if t.name == name), None)
+    arguments = {
+        'userId': userId,
+        'template': template
+    }
     
-    if not tool:
-        logger.error(f"Tool not found: {name}")
-        return CallToolResult(
-            content=[
-                TextContent(
-                    type="text",
-                    text=json.dumps({
-                        "success": False,
-                        "error": f"Tool not found: {name}"
-                    }, indent=2)
-                )
-            ],
-            isError=True
-        )
-    
-    try:
-        # Execute the tool
-        result = await tool.execute(arguments)
-        
-        return CallToolResult(
-            content=[
-                TextContent(
-                    type="text",
-                    text=json.dumps(result, indent=2, default=str)
-                )
-            ]
-        )
-    except Exception as error:
-        logger.error(f"MCP: Error executing tool {name}: {str(error)}")
-        
-        return CallToolResult(
-            content=[
-                TextContent(
-                    type="text",
-                    text=json.dumps({
-                        "success": False,
-                        "error": str(error)
-                    }, indent=2)
-                )
-            ],
-            isError=True
-        )
+    result = await tool.execute(arguments)
+    return result
 
 
 # ============================================
-# Legacy Class (for backward compatibility)
+# MCP Tool: Get Profile
 # ============================================
 
-class CVGeneratorMCPServer:
-    """MCP Server for CV Generation (legacy wrapper)"""
+@mcp.tool()
+async def get_profile(userId: str) -> Dict[str, Any]:
+    """Retrieve user profile information by user ID"""
+    tools = get_tools()
+    tool = tools['get_profile']
     
-    def __init__(self):
-        self.server = server
-        self.tools = get_tools()
+    arguments = {'userId': userId}
+    result = await tool.execute(arguments)
+    return result
+
+
+# ============================================
+# MCP Tool: Create Profile
+# ============================================
+
+@mcp.tool()
+async def create_profile(
+    userId: str,
+    name: str,
+    email: str,
+    phone: str,
+    address: str,
+    summary: str,
+    experience: list,
+    education: list,
+    skills: list,
+    languages: list = None,
+    certifications: list = None,
+    projects: list = None,
+    profilePhoto: str = None
+) -> Dict[str, Any]:
+    """Create a new user profile with personal and professional information"""
+    tools = get_tools()
+    tool = tools['create_profile']
     
-    async def start(self):
-        """Start the MCP server"""
-        try:
-            logger.info("=" * 50)
-            logger.info("CV Generator MCP Server Starting...")
-            logger.info("=" * 50)
-            
-            # Check environment
-            import os
-            from dotenv import load_dotenv
-            load_dotenv()
-            
-            mongo_uri = os.getenv('MONGO_URI')
-            if mongo_uri:
-                logger.info(f"MONGO_URI found (length: {len(mongo_uri)})")
-            else:
-                logger.error("MONGO_URI not found in environment")
-                raise ValueError("MONGO_URI environment variable is required")
-            
-            # Connect to database
-            logger.info("Connecting to MongoDB...")
-            await connect_db()
-            logger.info("Database connected successfully")
-            
-            # Start MCP server with stdio transport
-            logger.info("Starting MCP server with stdio transport...")
-            async with stdio_server() as (read_stream, write_stream):
-                logger.info("=" * 50)
-                logger.info("CV Generator MCP Server is running!")
-                logger.info(f"Available tools: {', '.join(t.name for t in self.tools)}")
-                logger.info("=" * 50)
-                
-                await self.server.run(
-                    read_stream,
-                    write_stream,
-                    self.server.create_initialization_options()
-                )
-        except Exception as error:
-            logger.error("=" * 50)
-            logger.error(f"MCP Server failed to start: {str(error)}")
-            logger.error(f"Error type: {type(error).__name__}")
-            logger.error("=" * 50)
-            import traceback
-            logger.error(traceback.format_exc())
-            sys.exit(1)
-
-
-async def main():
-    """Main entry point"""
-    # Verify environment variables before starting
-    mongo_uri = os.getenv('MONGO_URI')
-    if not mongo_uri:
-        logger.error("=" * 60)
-        logger.error("FATAL: MONGO_URI environment variable not set!")
-        logger.error("=" * 60)
-        logger.error("Please set MONGO_URI in your environment variables:")
-        logger.error("  - For FastMCP: Add MONGO_URI in Environment Variables section")
-        logger.error("  - For local: Add MONGO_URI to .env file")
-        logger.error("=" * 60)
-        sys.exit(1)
+    arguments = {
+        'userId': userId,
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'address': address,
+        'summary': summary,
+        'experience': experience,
+        'education': education,
+        'skills': skills,
+    }
     
-    mcp_server = CVGeneratorMCPServer()
-    await mcp_server.start()
+    if languages is not None:
+        arguments['languages'] = languages
+    if certifications is not None:
+        arguments['certifications'] = certifications
+    if projects is not None:
+        arguments['projects'] = projects
+    if profilePhoto is not None:
+        arguments['profilePhoto'] = profilePhoto
+    
+    result = await tool.execute(arguments)
+    return result
 
 
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        logger.info("MCP Server: Shutting down...")
-    except Exception as error:
-        logger.error(f"MCP Server: Fatal error - {str(error)}")
-        sys.exit(1)
+# ============================================
+# MCP Tool: Update Profile
+# ============================================
+
+@mcp.tool()
+async def update_profile(
+    userId: str,
+    name: str = None,
+    email: str = None,
+    phone: str = None,
+    address: str = None,
+    summary: str = None,
+    experience: list = None,
+    education: list = None,
+    skills: list = None,
+    languages: list = None,
+    certifications: list = None,
+    projects: list = None,
+    profilePhoto: str = None
+) -> Dict[str, Any]:
+    """Update an existing user profile with new information"""
+    tools = get_tools()
+    tool = tools['update_profile']
+    
+    arguments = {'userId': userId}
+    
+    if name is not None:
+        arguments['name'] = name
+    if email is not None:
+        arguments['email'] = email
+    if phone is not None:
+        arguments['phone'] = phone
+    if address is not None:
+        arguments['address'] = address
+    if summary is not None:
+        arguments['summary'] = summary
+    if experience is not None:
+        arguments['experience'] = experience
+    if education is not None:
+        arguments['education'] = education
+    if skills is not None:
+        arguments['skills'] = skills
+    if languages is not None:
+        arguments['languages'] = languages
+    if certifications is not None:
+        arguments['certifications'] = certifications
+    if projects is not None:
+        arguments['projects'] = projects
+    if profilePhoto is not None:
+        arguments['profilePhoto'] = profilePhoto
+    
+    result = await tool.execute(arguments)
+    return result
+
+
+# ============================================
+# MCP Tool: Delete Profile
+# ============================================
+
+@mcp.tool()
+async def delete_profile(userId: str) -> Dict[str, Any]:
+    """Delete a user profile by user ID"""
+    tools = get_tools()
+    tool = tools['delete_profile']
+    
+    arguments = {'userId': userId}
+    result = await tool.execute(arguments)
+    return result

@@ -1,6 +1,6 @@
 # Python MCP Server Dependencies
 # FastMCP for HTTP transport (required for FastMCP cloud)
-fastmcp>=0.2.0
+fastmcp>=2.0
 
 # Database
 motor>=3.3.0

@@ -1,5 +1,5 @@
 {
-  "entrypoint": "server_fastmcp.py:mcp",
+  "entrypoint": "server.py:mcp",
   "name": "cv-generator-mcp",
   "description": "CV Generator MCP Server - Generate professional CVs from user profiles"
 }
